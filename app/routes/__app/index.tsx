@@ -1,7 +1,21 @@
-export default function Index() {
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Link } from "@remix-run/react";
+import { requireUserId } from "~/utils/session.server";
+
+export const loader: LoaderFunction = async ({ request }) => {
+  await requireUserId(request);
+  return json({});
+};
+
+export default function IndexRoute() {
   return (
-    <div className="text-slate-900">
-      <h1 className="text-slate-900 font-bold text-d-p-lg">Welcome to Remix</h1>
+    <div>
+      Go to the{" "}
+      <Link className="text-blue-600 underline" to="sales">
+        sales
+      </Link>{" "}
+      page...
     </div>
   );
 }
