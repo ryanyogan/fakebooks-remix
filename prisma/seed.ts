@@ -7,15 +7,13 @@ function asUTC(date: Date) {
   return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
-function fromNow(days: number) {
-  return asUTC(
-    new Date(asUTC(new Date()).getTime() + 1000 * 60 * 60 * 24 * days)
-  );
-}
+const fromNow = (days: number) =>
+  asUTC(new Date(asUTC(new Date()).getTime() + 1000 * 60 * 60 * 24 * days));
 
 async function seed() {
-  const email = "ryan@jk.com";
+  const email = "ryan@remix.run";
 
+  // cleanup the existing database
   await prisma.user.deleteMany({});
   await prisma.customer.deleteMany({});
 

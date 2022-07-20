@@ -46,7 +46,7 @@ model Invoice {
   deposits  Deposit[]
   lineItems LineItem[]
 
-  customerId String   @unique
+  customerId String
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
@@ -59,7 +59,7 @@ model Deposit {
   depositDate DateTime @default(now())
   note        String
 
-  invoiceId String  @unique
+  invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
@@ -72,6 +72,6 @@ model LineItem {
   quantity    Int
   unitPrice   Float
 
-  invoiceId String  @unique
+  invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
