@@ -15,7 +15,7 @@ export function fromNow(days: number) {
 
 export function getDaysToDueDate(date: Date) {
   return Math.ceil(
-    date.getTime() - asUTC(new Date()).getTime() / (1000 * 60 * 60 * 24)
+    (date.getTime() - asUTC(new Date()).getTime()) / (1000 * 60 * 60 * 24)
   );
 }
 

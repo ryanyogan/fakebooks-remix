@@ -122,6 +122,22 @@ function InvoiceList({ children }: { children: React.ReactNode }) {
                 <div>{invoice.name}</div>
                 <div>{currencyFormatter.format(invoice.totalAmount)}</div>
               </div>
+              <div className="flex justify-between text-[length:12px] font-medium leading-4 text-gray-400">
+                <div>{invoice.number}</div>
+                <div
+                  className={
+                    "uppercase" +
+                    " " +
+                    (invoice.dueStatus === "paid"
+                      ? "text-green-brand"
+                      : invoice.dueStatus === "overdue"
+                      ? "text-red-brand"
+                      : "")
+                  }
+                >
+                  {invoice.dueStatusDisplay}
+                </div>
+              </div>
             </NavLink>
           ))}
         </div>
