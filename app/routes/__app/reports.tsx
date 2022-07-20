@@ -1,5 +1,5 @@
+import type { LoaderArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
-import type { LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { inputClasses, submitButtonClasses } from "~/components";
 import { requireUser } from "~/utils/session.server";
@@ -37,14 +37,14 @@ import { requireUser } from "~/utils/session.server";
 //   };
 // };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderArgs) {
   await requireUser(request);
   // TODO: make this thing work
   // const searchParams = new URL(request.url).searchParams;
   // const startDate = parseDate(searchParams.get("startDate") || "1000-01-01");
   // const endDate = parseDate(searchParams.get("endDate") || "1000-01-01");
   return json({});
-};
+}
 
 export default function ReportsRoute() {
   return (

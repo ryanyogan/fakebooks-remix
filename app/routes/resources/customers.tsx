@@ -1,4 +1,5 @@
-import type { LoaderFunction } from "@remix-run/node";
+import type { Customer } from "@prisma/client";
+import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
 import clsx from "clsx";
@@ -9,27 +10,21 @@ import { LabelText } from "~/components";
 import { searchCustomers } from "~/models/customer.server";
 import { requireUser } from "~/utils/session.server";
 
-type CustomerSearchResult = {
-  customers: Awaited<ReturnType<typeof searchCustomers>>;
-};
-
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderArgs) {
   await requireUser(request);
   const url = new URL(request.url);
   const query = url.searchParams.get("query");
   invariant(typeof query === "string", "query is required");
-  return json<CustomerSearchResult>({
+  return json({
     customers: await searchCustomers(query),
   });
-};
-
-type Customer = CustomerSearchResult["customers"][number];
+}
 
 export default function CustomerCombobox({ error }: { error?: string | null }) {
   const customerFetcher = useFetcher();
   const id = "asdasdkajsdadkj22kjd2";
   const customers =
-    (customerFetcher.data as CustomerSearchResult | null)?.customers ?? [];
+    (customerFetcher.data as { customers: Customer[] } | null)?.customers ?? [];
   const [selectedCustomer, setSelectedCustomer] = useState<
     Customer | null | undefined
   >(null);

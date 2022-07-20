@@ -1,5 +1,4 @@
-import type { Deposit, LineItem } from "@prisma/client";
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
@@ -18,27 +17,11 @@ import {
   submitButtonClasses,
 } from "~/components";
 import { createDeposit } from "~/models/deposit.server";
-import type { DueStatus } from "~/models/invoice.server";
 import { getInvoiceDetails } from "~/models/invoice.server";
 import { currencyFormatter, parseDate } from "~/utils/helpers";
 import { requireUser } from "~/utils/session.server";
 
-type LoaderData = {
-  customerName: string;
-  customerId: string;
-  totalAmount: number;
-  dueStatus: DueStatus;
-  dueDisplay: string;
-  invoiceDateDisplay: string;
-  lineItems: Array<
-    Pick<LineItem, "id" | "quantity" | "unitPrice" | "description">
-  >;
-  deposits: Array<
-    Pick<Deposit, "id" | "amount"> & { depositDateFormatted: string }
-  >;
-};
-
-export const loader: LoaderFunction = async ({ request, params }) => {
+export async function loader({ request, params }: LoaderArgs) {
   await requireUser(request);
   const { invoiceId } = params;
   if (typeof invoiceId !== "string") {
@@ -50,7 +33,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw new Response("not found", { status: 404 });
   }
 
-  return json<LoaderData>({
+  return json({
     customerName: invoiceDetails.invoice.customer.name,
     customerId: invoiceDetails.invoice.customer.id,
     totalAmount: invoiceDetails.totalAmount,
@@ -69,13 +52,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       depositDateFormatted: deposit.depositDate.toLocaleDateString(),
     })),
   });
-};
+}
 
-type ActionData = {
-  errors: {
-    amount: string | null;
-    depositDate: string | null;
-  };
+type ActionDataErrors = {
+  amount: string | null;
+  depositDate: string | null;
 };
 
 function validateAmount(amount: number) {
@@ -93,7 +74,7 @@ function validateDepositDate(date: Date) {
   return null;
 }
 
-export const action: ActionFunction = async ({ request, params }) => {
+export async function action({ request, params }: ActionArgs) {
   await requireUser(request);
   const { invoiceId } = params;
   if (typeof invoiceId !== "string") {
@@ -116,7 +97,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const depositDate = parseDate(depositDateString);
 
-      const errors: ActionData["errors"] = {
+      const errors: ActionDataErrors = {
         amount: validateAmount(amount),
         depositDate: validateDepositDate(depositDate),
       };
@@ -126,7 +107,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       );
 
       if (hasErrors) {
-        return json<ActionData>({ errors });
+        return json({ errors });
       }
 
       await createDeposit({ invoiceId, amount, note, depositDate });
@@ -137,14 +118,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       throw new Error(`Unsupported intent: ${intent}`);
     }
   }
-};
+}
 
 const lineItemClassName =
   "flex justify-between border-t border-gray-100 py-4 text-[14px] leading-[24px]";
 
 export default function InvoiceRoute() {
   const location = useLocation();
-  const data = useLoaderData() as LoaderData;
+  const data = useLoaderData<typeof loader>();
   return (
     <div className="relative p-10" key={location.key}>
       <Link
@@ -201,7 +182,7 @@ interface DepositFormElement extends HTMLFormElement {
 }
 
 function Deposits() {
-  const data = useLoaderData() as LoaderData;
+  const data = useLoaderData<typeof loader>();
   const newDepositFetcher = useFetcher();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -227,9 +208,7 @@ function Deposits() {
     }
   }
 
-  const errors = newDepositFetcher.data?.errors as
-    | ActionData["errors"]
-    | undefined;
+  const errors = newDepositFetcher.data?.errors as ActionDataErrors | undefined;
 
   useEffect(() => {
     if (!formRef.current) return;

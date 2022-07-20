@@ -1,8 +1,4 @@
-import type {
-  ActionFunction,
-  LoaderFunction,
-  MetaFunction,
-} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
@@ -11,11 +7,11 @@ import { createUser, getUserByEmail, verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils/helpers";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
-};
+}
 
 interface ActionData {
   errors?: {
@@ -24,7 +20,7 @@ interface ActionData {
   };
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const email = formData.get("email");
@@ -33,21 +29,18 @@ export const action: ActionFunction = async ({ request }) => {
   const remember = formData.get("remember");
 
   if (!validateEmail(email)) {
-    return json<ActionData>(
-      { errors: { email: "Email is invalid" } },
-      { status: 400 }
-    );
+    return json({ errors: { email: "Email is invalid" } }, { status: 400 });
   }
 
   if (typeof password !== "string") {
-    return json<ActionData>(
+    return json(
       { errors: { password: "Password is required" } },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
-    return json<ActionData>(
+    return json(
       { errors: { password: "Password is too short" } },
       { status: 400 }
     );
@@ -59,7 +52,7 @@ export const action: ActionFunction = async ({ request }) => {
     case "signup": {
       const existingUser = await getUserByEmail(email);
       if (existingUser) {
-        return json<ActionData>(
+        return json(
           { errors: { email: "A user already exists with this email" } },
           { status: 400 }
         );
@@ -80,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   if (!user) {
-    return json<ActionData>(
+    return json(
       { errors: { email: "Invalid email or password" } },
       { status: 400 }
     );
@@ -92,7 +85,7 @@ export const action: ActionFunction = async ({ request }) => {
     remember: remember === "on" ? true : false,
     redirectTo,
   });
-};
+}
 
 export const meta: MetaFunction = () => {
   return {
